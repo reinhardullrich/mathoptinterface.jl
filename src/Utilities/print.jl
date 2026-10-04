@@ -727,6 +727,11 @@ function MOI.get(
     return ""  # Leave as default
 end
 
+function Base.show(io::IO, ::MIME"text/plain", f::MOI.VariableIndex)
+    print(io, "MOI.VariableIndex(", f.value, ")")
+    return nothing
+end
+
 function Base.show(io::IO, f::MOI.AbstractFunction)
     return show(io, MIME("text/plain"), f)
 end

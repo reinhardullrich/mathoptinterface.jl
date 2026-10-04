@@ -451,7 +451,7 @@ function convert_to_expr(model::Model, expr::Expression)
             expr.values[node.index]
         end
         if 1 <= node.parent <= length(tree)
-            push!(tree[node.parent].args, node_expr)
+            push!((tree[node.parent]::Expr).args, node_expr)
         end
         push!(tree, node_expr)
     end
@@ -459,10 +459,10 @@ function convert_to_expr(model::Model, expr::Expression)
 end
 
 # TODO(odow): NODE_COMPARISON is a bit of a pain to deal with...
-_replace_comparison(expr) = expr
-
-function _replace_comparison(expr::Expr)
-    if Meta.isexpr(expr, :call, 4) && expr.args[1] in (:<=, :>=, :(==), :<, :>)
+Base.@nospecializeinfer function _replace_comparison(@nospecialize(expr))
+    expr isa Expr || return expr
+    op = isempty(expr.args) ? nothing : expr.args[1]
+    if Meta.isexpr(expr, :call, 4) && op isa Symbol && op in (:<=, :>=, :(==), :<, :>)
         return Expr(
             :comparison,
             expr.args[2],

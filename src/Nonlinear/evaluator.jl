@@ -320,25 +320,21 @@ function convert_to_expr(
     return expr
 end
 
-_convert_to_moi_format(::Evaluator, x::MOI.VariableIndex) = :(x[$x])
-
-function _convert_to_moi_format(evaluator::Evaluator, p::ParameterIndex)
-    return evaluator.model[p]
-end
-
-function _convert_to_moi_format(evaluator::Evaluator, x::ExpressionIndex)
-    return convert_to_expr(
-        evaluator,
-        evaluator.model.expressions[x.value];
-        moi_output_format = true,
-    )
-end
-
-_convert_to_moi_format(::Evaluator, x) = x
-
-function _convert_to_moi_format(evaluator::Evaluator, x::Expr)
-    for i in 1:length(x.args)
-        x.args[i] = _convert_to_moi_format(evaluator, x.args[i])
+Base.@nospecializeinfer function _convert_to_moi_format(evaluator::Evaluator, @nospecialize(x))
+    if x isa MOI.VariableIndex
+        return :(x[$x])
+    elseif x isa ParameterIndex
+        return evaluator.model[x]
+    elseif x isa ExpressionIndex
+        return convert_to_expr(
+            evaluator,
+            evaluator.model.expressions[x.value];
+            moi_output_format = true,
+        )
+    elseif x isa Expr
+        for i in eachindex(x.args)
+            x.args[i] = _convert_to_moi_format(evaluator, x.args[i])
+        end
     end
     return x
 end

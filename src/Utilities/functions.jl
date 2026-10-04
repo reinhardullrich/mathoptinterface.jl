@@ -119,18 +119,18 @@ for a similar function where `value_fn` returns an
 """
 function eval_variables end
 
-function eval_variables(value_fn::Function, t::MOI.ScalarAffineTerm)
+function eval_variables(value_fn::F, t::MOI.ScalarAffineTerm) where {F<:Function}
     return t.coefficient * value_fn(t.variable)
 end
 
-function eval_variables(value_fn::Function, t::MOI.ScalarQuadraticTerm)
+function eval_variables(value_fn::F, t::MOI.ScalarQuadraticTerm) where {F<:Function}
     out = t.coefficient * value_fn(t.variable_1) * value_fn(t.variable_2)
     return t.variable_1 == t.variable_2 ? out / 2 : out
 end
 
 eval_variables(value_fn::Function, f::MOI.VariableIndex) = value_fn(f)
 
-function eval_variables(value_fn::Function, f::MOI.ScalarAffineFunction)
+function eval_variables(value_fn::F, f::MOI.ScalarAffineFunction) where {F<:Function}
     out = f.constant
     for t in f.terms
         out += eval_variables(value_fn, t)
@@ -138,7 +138,7 @@ function eval_variables(value_fn::Function, f::MOI.ScalarAffineFunction)
     return out
 end
 
-function eval_variables(value_fn::Function, f::MOI.ScalarQuadraticFunction)
+function eval_variables(value_fn::F, f::MOI.ScalarQuadraticFunction) where {F<:Function}
     out = f.constant
     for a in f.affine_terms
         out += eval_variables(value_fn, a)
@@ -149,11 +149,11 @@ function eval_variables(value_fn::Function, f::MOI.ScalarQuadraticFunction)
     return out
 end
 
-function eval_variables(value_fn::Function, f::MOI.VectorOfVariables)
+function eval_variables(value_fn::F, f::MOI.VectorOfVariables) where {F<:Function}
     return map(value_fn, f.variables)
 end
 
-function eval_variables(value_fn::Function, f::MOI.VectorAffineFunction)
+function eval_variables(value_fn::F, f::MOI.VectorAffineFunction) where {F<:Function}
     out = copy(f.constants)
     for t in f.terms
         out[t.output_index] += eval_variables(value_fn, t.scalar_term)
@@ -161,7 +161,7 @@ function eval_variables(value_fn::Function, f::MOI.VectorAffineFunction)
     return out
 end
 
-function eval_variables(value_fn::Function, f::MOI.VectorQuadraticFunction)
+function eval_variables(value_fn::F, f::MOI.VectorQuadraticFunction) where {F<:Function}
     out = copy(f.constants)
     for t in f.affine_terms
         out[t.output_index] += eval_variables(value_fn, t.scalar_term)

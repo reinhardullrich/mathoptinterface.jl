@@ -39,6 +39,22 @@ function get_fallback(model::MOI.ModelLike, attr::MOI.ObjectiveValue)
     MOI.check_result_index_bounds(model, attr)
     F = MOI.get(model, MOI.ObjectiveFunctionType())
     f = MOI.get(model, MOI.ObjectiveFunction{F}())
+    return get_fallback(model, attr, f)
+end
+
+"""
+    get_fallback(model::MOI.ModelLike, attr::MOI.ObjectiveValue, f::MOI.AbstractFunction)
+
+Compute the objective value from an already retrieved objective function `f`.
+This overload lets an adapter retain its concrete function type instead of
+round-tripping through a runtime `ObjectiveFunctionType` value.
+"""
+function get_fallback(
+    model::MOI.ModelLike,
+    attr::MOI.ObjectiveValue,
+    f::MOI.AbstractFunction,
+)
+    MOI.check_result_index_bounds(model, attr)
     obj = eval_variables(model, f) do vi
         return MOI.get(model, MOI.VariablePrimal(attr.result_index), vi)
     end

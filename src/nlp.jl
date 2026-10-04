@@ -171,9 +171,9 @@ julia> block = MOI.NLPBlockData(
 julia> MOI.set(model, MOI.NLPBlock(), block)
 ```
 """
-struct NLPBlockData
+struct NLPBlockData{E<:AbstractNLPEvaluator}
     constraint_bounds::Vector{NLPBoundsPair}
-    evaluator::AbstractNLPEvaluator
+    evaluator::E
     has_objective::Bool
 end
 
